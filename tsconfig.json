@@ -17,7 +17,7 @@
         "paths": {
             "@modules/*": ["./src/modules/*"],
             "@common/*": ["./src/common/*"],
-            "@prisma/*": ["./src/prisma/*"]
+            "@prisma/*": ["src/db/*"]
         },
         "incremental": true,
         "skipLibCheck": true,
