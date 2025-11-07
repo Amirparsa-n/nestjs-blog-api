@@ -3,5 +3,8 @@ namespace NodeJS {
     PORT: string;
     DATABASE_URL: string;
     JWT_SECRET: string;
+    // Secret
+    COOKIE_SECRET: string;
+    OTP_TOKEN_SECRET: string;
   }
 }

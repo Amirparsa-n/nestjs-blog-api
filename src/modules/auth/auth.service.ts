@@ -1,48 +1,105 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Scope,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/db/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import { AuthType } from './enums/type.enum';
 import { AuthMethod } from './enums/method.enum';
 import { isEmail, isPhoneNumber, isString } from 'class-validator';
-import { Prisma, User } from 'generated/prisma';
+import { User } from 'generated/prisma';
+import { randomInt } from 'node:crypto';
+import { TokensService } from './tokens.service';
+import type { Request, Response } from 'express';
+import { CookieKey } from '@common/enums/cookie.enum';
+import type { AuthResponse } from './types/response.types';
+import { REQUEST } from '@nestjs/core';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tokensService: TokensService,
+    @Inject(REQUEST) private readonly request: Request
+  ) {}
 
-  userExistence(authDto: AuthDto) {
+  async userExistence(authDto: AuthDto, res: Response) {
     const { method, type, username } = authDto;
 
+    let result: AuthResponse;
     switch (type) {
       case AuthType.Login:
-        return this.login(method, username);
+        result = await this.login(method, username);
+        return this.sendResponse(res, result);
       case AuthType.Register:
-        return this.register(method, username);
+        result = await this.register(method, username);
+        return this.sendResponse(res, result);
       default:
         throw new UnauthorizedException('Invalid authentication type');
     }
   }
 
-  private async login(method: AuthMethod, username: string) {
+  async checkOtp(code: string) {
+    const token: string | null = this.request.cookies[CookieKey.OTP];
+    if (!token) throw new UnauthorizedException('Invalid OTP token');
+    return token;
+  }
+
+  private async login(method: AuthMethod, username: string): Promise<AuthResponse> {
     username = this.usernameValidator(method, username);
 
     const user = await this.checkUserExistence(method, username);
     if (!user) throw new ConflictException('کاربر مورد نظر یافت نشد');
 
-    return user;
+    const otp = await this.sendOrSaveOtp(user.id);
+
+    const token = this.tokensService.createOtpToken({ userId: user.id });
+
+    return { code: otp.code, token };
   }
 
-  private async register(method: AuthMethod, username: string) {
+  private async register(method: AuthMethod, username: string): Promise<AuthResponse> {
     username = this.usernameValidator(method, username);
 
-    const user = await this.checkUserExistence(method, username);
-    if (!user) throw new ConflictException('کاربر مورد نظر یافت نشد');
+    let user: null | User;
+    user = await this.checkUserExistence(method, username);
+    if (user) throw new ConflictException('کاربر با این مشخصات وجود دارد');
 
-    return user;
+    if (method === AuthMethod.Username) {
+      throw new BadRequestException('اطلاعات ارسال شده برای ثبت نام صحیح نمی باشد');
+    }
+    const randomUsername = `m_${randomInt(1000000000, 9999999999)}`;
+
+    user = await this.prisma.user.create({ data: { [method]: username, username: randomUsername } });
+
+    const otp = await this.sendOrSaveOtp(user.id);
+
+    const token = this.tokensService.createOtpToken({ userId: user.id });
+
+    return { code: otp.code, token };
   }
 
-  private checkOtp() {}
-  private sendOtp() {}
+  private sendResponse(res: Response, result: AuthResponse) {
+    const { token, code } = result;
+    res.cookie(CookieKey.OTP, token, { httpOnly: true, secure: true, expires: new Date(Date.now() + 1000 * 60 * 2) });
+
+    res.json({ message: 'کد تایید به شماره شما ارسال شد', code: code, token });
+  }
+
+  private async sendOrSaveOtp(userId: string) {
+    const code = randomInt(10000, 99999).toString();
+    const expiresIn = new Date(Date.now() + 1000 * 60 * 2); // 2 دقیقه
+
+    return this.prisma.otp.upsert({
+      where: { userId },
+      update: { code, expiresIn },
+      create: { code, expiresIn, userId },
+    });
+  }
 
   private async checkUserExistence(method: AuthMethod, username: string) {
     let user: User | null;
@@ -57,20 +114,20 @@ export class AuthService {
         user = await this.prisma.user.findFirst({ where: { username } });
         break;
     }
-    return !!user;
+    return user;
   }
 
   private usernameValidator(method: AuthMethod, username: string) {
     switch (method) {
       case AuthMethod.Email:
         if (isEmail(username)) return username;
-        throw new BadRequestException('Invalid email format');
+        throw new BadRequestException('ایمیل نامعتبر');
       case AuthMethod.Phone:
         if (isPhoneNumber(username, 'IR')) return username;
-        throw new BadRequestException('Invalid phone number format');
+        throw new BadRequestException('شماره همراه نامعتبر');
       case AuthMethod.Username:
         if (isString(username)) return username;
-        throw new BadRequestException('Invalid username format');
+        throw new BadRequestException('فرمت نام‌کاربری نامعتبر می باشد');
     }
   }
 }
