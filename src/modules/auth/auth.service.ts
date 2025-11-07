@@ -62,6 +62,13 @@ export class AuthService {
     };
   }
 
+  async validateAccessToken(token: string) {
+    const { userId } = this.tokensService.verifyAccessToken(token);
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException('Invalid access token');
+    return user;
+  }
+
   private async login(method: AuthMethod, username: string): Promise<AuthResponse> {
     username = this.usernameValidator(method, username);
 
