@@ -17,7 +17,7 @@ export class AuthDto {
 }
 
 export class CheckOtpDto {
-  @ApiProperty()
+  @ApiProperty({ example: '' })
   @IsString()
   @Length(5, 5)
   code: string;

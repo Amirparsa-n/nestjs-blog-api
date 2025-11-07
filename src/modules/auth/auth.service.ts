@@ -46,7 +46,20 @@ export class AuthService {
   async checkOtp(code: string) {
     const token: string | null = this.request.cookies[CookieKey.OTP];
     if (!token) throw new UnauthorizedException('Invalid OTP token');
-    return token;
+
+    const { userId } = this.tokensService.verifyOtpToken(token);
+    const otp = await this.prisma.otp.findFirst({ where: { userId } });
+    if (!otp) throw new UnauthorizedException();
+
+    if (otp.expiresIn < new Date()) throw new UnauthorizedException();
+    if (otp.code !== code) throw new BadRequestException('کد وارد شده اشتباه است');
+
+    const accessToken = this.tokensService.createAccessToken({ userId: userId });
+
+    return {
+      message: 'با موفقیت وارد حساب کاربری خود شدید',
+      accessToken,
+    };
   }
 
   private async login(method: AuthMethod, username: string): Promise<AuthResponse> {
