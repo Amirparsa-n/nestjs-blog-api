@@ -4,9 +4,10 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'node:path';
 import configuration from './config/configuration';
-import { PrismaModule } from '@prisma/prisma.module';
+import { PrismaModule } from '@db/prisma.module';
 import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AuthModule } from '@modules/auth/auth.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

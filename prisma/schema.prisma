@@ -5,8 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -43,4 +44,10 @@ model Profile {
   linkedin_profile_url String?
   userId               String    @unique
   user                 User      @relation(fields: [userId], references: [id])
+}
+
+model Category {
+  id       String @id @default(uuid())
+  title    String
+  priority Int?
 }

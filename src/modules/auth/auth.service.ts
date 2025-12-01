@@ -11,13 +11,13 @@ import { AuthDto } from './dto/auth.dto';
 import { AuthType } from './enums/type.enum';
 import { AuthMethod } from './enums/method.enum';
 import { isEmail, isPhoneNumber, isString } from 'class-validator';
-import { User } from 'generated/prisma';
 import { randomInt } from 'node:crypto';
 import { TokensService } from './tokens.service';
 import type { Request, Response } from 'express';
 import { CookieKey } from '@common/enums/cookie.enum';
 import type { AuthResponse } from './types/response.types';
 import { REQUEST } from '@nestjs/core';
+import type { User } from 'generated/prisma/client';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthService {
