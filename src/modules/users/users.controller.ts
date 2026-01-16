@@ -1,32 +1,62 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Param,
+  Delete,
+  Put,
+  UseGuards,
+  UseInterceptors,
+  ParseFilePipe,
+  UploadedFiles,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@modules/auth/guards/auth.guard';
+import { ProfileDto } from './dto/profile.dto';
+import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { multerStorage } from '../../utils/multer.util.js';
 
 @Controller('users')
-@ApiTags('users')
+@ApiTags('Users')
+@ApiBearerAuth('auth')
+@UseGuards(AuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @Put('/profile')
+  @ApiConsumes(SwaggerConsumes.MULTIPART)
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'avatar', maxCount: 1 },
+        { name: 'bg_image', maxCount: 1 },
+      ],
+      { storage: multerStorage('user-profile') }
+    )
+  )
+  updateUserProfile(@Body() profileDto: ProfileDto, @UploadedFiles(new ParseFilePipe()) files: any) {
+    return this.usersService.updateUserProfile(profileDto, files);
+  }
+
+  @Get('/profile')
+  @ApiBearerAuth('auth')
+  @UseGuards(AuthGuard)
+  getProfile() {
+    return this.usersService.getProfile();
   }
 
   @Get()
   findAll() {
+    console.log(new Date());
+
     return this.usersService.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.findOne(id);
   }
 
   @Delete(':id')

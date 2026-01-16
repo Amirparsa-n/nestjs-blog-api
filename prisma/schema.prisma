@@ -20,7 +20,7 @@ model User {
   username String   @unique
   phone    String?
   email    String?
-  Profile  Profile?
+  profile  Profile?
   otp      Otp?
 
   @@unique([email, phone, username])
@@ -43,7 +43,7 @@ model Profile {
   birthday             DateTime?
   linkedin_profile_url String?
   userId               String    @unique
-  user                 User      @relation(fields: [userId], references: [id])
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Category {
