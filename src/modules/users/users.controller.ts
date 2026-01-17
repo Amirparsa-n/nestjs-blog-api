@@ -9,11 +9,12 @@ import {
   UseInterceptors,
   ParseFilePipe,
   UploadedFiles,
+  Patch,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@modules/auth/guards/auth.guard';
-import { ProfileDto } from './dto/profile.dto';
+import { ChangeUsernameDto, ProfileDto } from './dto/profile.dto';
 import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerStorage } from '../../utils/multer.util.js';
@@ -45,6 +46,11 @@ export class UsersController {
   @UseGuards(AuthGuard)
   getProfile() {
     return this.usersService.getProfile();
+  }
+
+  @Patch('change-username')
+  async changeUsername(@Body() changeUsernameDto: ChangeUsernameDto) {
+    return this.usersService.changeUsername(changeUsernameDto.username);
   }
 
   @Get()

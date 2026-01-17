@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsDateString, IsUrl, IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, IsDateString, IsUrl, IsEnum, Length } from 'class-validator';
 import { Gender } from '../enum/gender.enum';
 
 export class ProfileDto {
@@ -32,4 +32,11 @@ export class ProfileDto {
   @IsOptional()
   @IsUrl()
   linkedin_profile_url?: string;
+}
+
+export class ChangeUsernameDto {
+  @ApiProperty()
+  @IsString()
+  @Length(3, 100)
+  username: string;
 }

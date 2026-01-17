@@ -1,5 +1,5 @@
 import { PrismaService } from '@db/prisma.service';
-import { Inject, Injectable, Scope } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, Scope } from '@nestjs/common';
 import { ProfileDto } from './dto/profile.dto';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
@@ -54,6 +54,21 @@ export class UsersService {
     const profile = await this.prisma.profile.findUnique({ where: { userId: user.id }, include: { user: true } });
 
     return profile;
+  }
+
+  async changeUsername(username: string) {
+    const user = this.request.user;
+    if (!user) return;
+
+    const userData = await this.prisma.user.findUnique({ where: { username: user?.username } });
+
+    if (userData && userData.id !== user.id) {
+      throw new ConflictException();
+    }
+
+    await this.prisma.user.update({ where: { id: user.id }, data: { username } });
+
+    return { message: 'نام کاربری با موفقیت ویرایش شد' };
   }
 
   findAll() {
