@@ -15,13 +15,17 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  name     String?
-  username String   @unique
-  phone    String?
-  email    String?
-  profile  Profile?
-  otp      Otp?
+  id           String          @id @default(uuid())
+  name         String?
+  username     String          @unique
+  phone        String?
+  email        String?
+  profile      Profile?
+  otp          Otp?
+  blogs        Blog[]
+  likeBlog     like_blog?
+  bookmarkBlog bookmark_blog?
+  blogComment  blog_comment[]
 
   @@unique([email, phone, username])
 }
@@ -50,4 +54,54 @@ model Category {
   id       String @id @default(uuid())
   title    String
   priority Int?
+}
+
+model Blog {
+  id            String          @id @default(uuid())
+  title         String
+  slug          String          @unique
+  description   String
+  content       String
+  image         String
+  status        String          @default("draft")
+  created_at    DateTime
+  updated_at    DateTime
+  authorId      String
+  author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likeBlogs     like_blog[]
+  bookmarkBlogs bookmark_blog[]
+  blogComments  blog_comment[]
+}
+
+model like_blog {
+  id     String @id @default(uuid())
+  blogId String
+  blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blogId])
+}
+
+model bookmark_blog {
+  id     String @id @default(uuid())
+  blogId String
+  blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model blog_comment {
+  id         String        @id @default(uuid())
+  text       String
+  accepted   Boolean       @default(false)
+  blogId     String
+  blog       Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId   String?
+  parent     blog_comment? @relation("CommentParent", fields: [parentId], references: [id], onDelete: SetNull)
+  created_at DateTime      @default(now())
+
+  children blog_comment[] @relation("CommentParent")
 }
