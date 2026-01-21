@@ -2,12 +2,15 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
+import { ApiConsumes } from '@nestjs/swagger';
+import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
 
 @Controller('blog')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   @Post()
+  @ApiConsumes(SwaggerConsumes.MULTIPART)
   create(@Body() createBlogDto: CreateBlogDto) {
     return this.blogService.create(createBlogDto);
   }
