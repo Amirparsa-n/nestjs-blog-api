@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
+import { generateSlug } from '../../utils/generateSlug.js';
 
 @Injectable()
 export class BlogService {
   create(createBlogDto: CreateBlogDto) {
-    return 'This action adds a new blog';
+    // let { title } = createBlogDto;
+
+    const slug = createBlogDto.slug ?? generateSlug(createBlogDto.title);
   }
 
   findAll() {
