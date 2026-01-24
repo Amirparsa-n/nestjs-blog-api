@@ -26,6 +26,10 @@ export class CategoryService {
     return { message: 'دسته بندی با موفقیت ساخته شد', data: category };
   }
 
+  async insertByTitle(title: string) {
+    return await this.prisma.category.create({ data: { title } });
+  }
+
   async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     const category = await this.findOne(id);
 
@@ -68,6 +72,10 @@ export class CategoryService {
 
     if (!category) throw new NotFoundException(NotFoundMessage.NotFound);
 
+    return category;
+  }
+  async findByTitle(title: string) {
+    const category = await this.prisma.category.findFirst({ where: { title } });
     return category;
   }
 

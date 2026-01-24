@@ -9,6 +9,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
@@ -17,6 +18,8 @@ import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
 import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PaginationDto } from '../../common/dtos/pagination.dto.js';
+import { SkipAuth } from '../../common/decorators/skipAuth.decorator.js';
 
 @Controller('blog')
 @ApiTags('Blog')
@@ -38,8 +41,9 @@ export class BlogController {
   }
 
   @Get()
-  findAll() {
-    return this.blogService.findAll();
+  @SkipAuth()
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.blogService.findAll(paginationDto);
   }
 
   @Get(':id')

@@ -54,23 +54,36 @@ model Category {
   id       String @id @default(uuid())
   title    String
   priority Int?
+
+  blogs BlogCategory[]
 }
 
 model Blog {
-  id            String          @id @default(uuid())
-  title         String
-  slug          String          @unique
-  description   String
-  content       String
-  image         String
-  status        String          @default("draft")
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
-  authorId      String
-  author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  likeBlogs     like_blog[]
-  bookmarkBlogs bookmark_blog[]
-  blogComments  blog_comment[]
+  id             String          @id @default(uuid())
+  title          String
+  slug           String          @unique
+  description    String
+  content        String
+  image          String
+  status         String          @default("draft")
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  authorId       String
+  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likeBlogs      like_blog[]
+  bookmarkBlogs  bookmark_blog[]
+  blogComments   blog_comment[]
+  categories BlogCategory[]
+}
+
+model BlogCategory {
+  blogId     String
+  categoryId String
+
+  blog     Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([blogId, categoryId])
 }
 
 model like_blog {

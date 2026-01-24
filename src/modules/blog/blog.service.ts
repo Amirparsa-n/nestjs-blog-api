@@ -7,11 +7,15 @@ import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
 import { BlogStatus } from './enum/status.enum.js';
 import { Message } from '../../common/enums/message.enum.js';
+import { PaginationDto } from '../../common/dtos/pagination.dto.js';
+import { paginationResponse, paginationSolver } from '../../utils/pagination.js';
+import { CategoryService } from '../category/category.service.js';
 
 @Injectable()
 export class BlogService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly categoryService: CategoryService,
     @Inject(REQUEST) private readonly request: Request
   ) {}
 
@@ -19,6 +23,17 @@ export class BlogService {
     const user = this.request.user;
 
     const { title, content, description, image } = createBlogDto;
+
+    // دریافت دسته بندی به صورت استرینگ با کاما
+    const categories = createBlogDto.categories.split(',');
+
+    const categoryIds = await Promise.all(
+      categories.map(async (title) => {
+        const category =
+          (await this.categoryService.findByTitle(title)) ?? (await this.categoryService.insertByTitle(title));
+        return category.id;
+      })
+    );
 
     let slug = createBlogDto.slug || generateSlug(createBlogDto.title);
 
@@ -38,6 +53,19 @@ export class BlogService {
         status: BlogStatus.Draft,
         created_at: new Date(),
         updated_at: new Date(),
+
+        categories: {
+          create: categoryIds.map((categoryId) => ({
+            category: {
+              connect: { id: categoryId },
+            },
+          })),
+        },
+      },
+      include: {
+        categories: {
+          include: { category: true },
+        },
       },
     });
 
@@ -50,8 +78,22 @@ export class BlogService {
     return await this.prisma.blog.findMany({ where: { authorId: user.id }, orderBy: { id: 'desc' } });
   }
 
-  findAll() {
-    return `This action returns all blog`;
+  async findAll(paginationDto: PaginationDto) {
+    const { take, skip, page } = paginationSolver(paginationDto);
+
+    const count = await this.prisma.blog.count();
+
+    const categories = await this.prisma.blog.findMany({
+      skip,
+      take,
+    });
+
+    return paginationResponse({
+      count,
+      page,
+      take,
+      data: categories,
+    });
   }
 
   findOne(id: number) {

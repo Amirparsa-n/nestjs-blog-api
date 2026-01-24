@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { BlogStatus } from '../enum/status.enum.js';
 
 export class CreateBlogDto {
@@ -53,4 +53,8 @@ export class CreateBlogDto {
   @IsOptional()
   @IsEnum(BlogStatus)
   status?: BlogStatus;
+
+  @ApiProperty({ type: String, isArray: true })
+  @IsString()
+  categories: string;
 }
