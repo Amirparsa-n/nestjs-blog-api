@@ -44,6 +44,12 @@ export class BlogService {
     return { message: Message.Created, data: blog };
   }
 
+  async getMyBlogs() {
+    const user = this.request.user;
+
+    return await this.prisma.blog.findMany({ where: { authorId: user.id }, orderBy: { id: 'desc' } });
+  }
+
   findAll() {
     return `This action returns all blog`;
   }

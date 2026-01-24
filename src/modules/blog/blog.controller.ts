@@ -32,6 +32,11 @@ export class BlogController {
     return this.blogService.create(createBlogDto);
   }
 
+  @Get('/my')
+  myBlogs() {
+    return this.blogService.getMyBlogs();
+  }
+
   @Get()
   findAll() {
     return this.blogService.findAll();
