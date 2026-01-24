@@ -12,7 +12,10 @@ export class UsersService {
     @Inject(REQUEST) private readonly request: Request
   ) {}
 
-  async updateUserProfile(profileDto: ProfileDto, files: any) {
+  async updateUserProfile(
+    profileDto: ProfileDto,
+    files: { avatar: Express.Multer.File[]; bg_image: Express.Multer.File[] }
+  ) {
     const user = this.request.user;
     if (!user) return;
 

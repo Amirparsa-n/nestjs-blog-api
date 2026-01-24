@@ -1,10 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
 import { AuthGuard } from '../auth/guards/auth.guard.js';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('blog')
 @ApiTags('Blog')
@@ -15,7 +27,8 @@ export class BlogController {
 
   @Post()
   @ApiConsumes(SwaggerConsumes.MULTIPART)
-  create(@Body() createBlogDto: CreateBlogDto) {
+  @UseInterceptors(FileInterceptor('image'))
+  create(@UploadedFile() image: Express.Multer.File, @Body() createBlogDto: CreateBlogDto) {
     return this.blogService.create(createBlogDto);
   }
 

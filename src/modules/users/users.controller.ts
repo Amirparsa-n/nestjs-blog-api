@@ -37,7 +37,10 @@ export class UsersController {
       { storage: multerStorage('user-profile') }
     )
   )
-  updateUserProfile(@Body() profileDto: ProfileDto, @UploadedFiles(new ParseFilePipe()) files: any) {
+  updateUserProfile(
+    @Body() profileDto: ProfileDto,
+    @UploadedFiles(new ParseFilePipe()) files: { avatar: Express.Multer.File[]; bg_image: Express.Multer.File[] }
+  ) {
     return this.usersService.updateUserProfile(profileDto, files);
   }
 

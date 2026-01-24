@@ -15,9 +15,9 @@ datasource db {
 }
 
 model User {
-  id           String          @id @default(uuid())
+  id           String         @id @default(uuid())
   name         String?
-  username     String          @unique
+  username     String         @unique
   phone        String?
   email        String?
   profile      Profile?
@@ -64,8 +64,8 @@ model Blog {
   content       String
   image         String
   status        String          @default("draft")
-  created_at    DateTime
-  updated_at    DateTime
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
   authorId      String
   author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
   likeBlogs     like_blog[]
