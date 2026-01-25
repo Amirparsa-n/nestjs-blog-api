@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { BlogStatus } from '../enum/status.enum.js';
 
@@ -57,4 +57,11 @@ export class CreateBlogDto {
   @ApiProperty({ type: String, isArray: true })
   @IsString()
   categories: string;
+}
+
+export class UpdateBlogDto extends PartialType(CreateBlogDto) {}
+
+export class FilterBlogDto {
+  categoryId: string;
+  search: string;
 }

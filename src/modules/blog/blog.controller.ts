@@ -10,16 +10,17 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
-import { CreateBlogDto } from './dto/create-blog.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from './dto/blog.dto';
+import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
 import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginationDto } from '../../common/dtos/pagination.dto.js';
 import { SkipAuth } from '../../common/decorators/skipAuth.decorator.js';
+import { Pagination } from '../../common/decorators/pagination.decorator.js';
 
 @Controller('blog')
 @ApiTags('Blog')
@@ -42,8 +43,11 @@ export class BlogController {
 
   @Get()
   @SkipAuth()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.blogService.findAll(paginationDto);
+  @Pagination()
+  @ApiQuery({ name: 'categoryId', nullable: true, required: false })
+  @ApiQuery({ name: 'search', nullable: true, required: false })
+  findAll(@Query() paginationDto: PaginationDto, @Query() filterBlogDto: FilterBlogDto) {
+    return this.blogService.findAll(paginationDto, filterBlogDto);
   }
 
   @Get(':id')
@@ -57,7 +61,7 @@ export class BlogController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.blogService.remove(+id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.blogService.remove(id);
   }
 }

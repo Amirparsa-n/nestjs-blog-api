@@ -1,6 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { CreateBlogDto } from './dto/create-blog.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from './dto/blog.dto';
 import { generateSlug } from '../../utils/generateSlug.js';
 import { PrismaService } from '../../db/prisma.service.js';
 import { REQUEST } from '@nestjs/core';
@@ -10,6 +9,7 @@ import { Message } from '../../common/enums/message.enum.js';
 import { PaginationDto } from '../../common/dtos/pagination.dto.js';
 import { paginationResponse, paginationSolver } from '../../utils/pagination.js';
 import { CategoryService } from '../category/category.service.js';
+import { Prisma } from '../../../generated/prisma/browser.js';
 
 @Injectable()
 export class BlogService {
@@ -78,21 +78,63 @@ export class BlogService {
     return await this.prisma.blog.findMany({ where: { authorId: user.id }, orderBy: { id: 'desc' } });
   }
 
-  async findAll(paginationDto: PaginationDto) {
+  async findAll(paginationDto: PaginationDto, filterBlogDto: FilterBlogDto) {
     const { take, skip, page } = paginationSolver(paginationDto);
+    const { categoryId, search } = filterBlogDto;
 
-    const count = await this.prisma.blog.count();
+    const andConditions: Prisma.BlogWhereInput[] = [];
 
-    const categories = await this.prisma.blog.findMany({
+    if (categoryId) {
+      andConditions.push({
+        categories: {
+          some: {
+            category: { id: { contains: categoryId } },
+          },
+        },
+      });
+    }
+
+    // 🔹 Global search
+    if (search) {
+      andConditions.push({
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+          { content: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+          {
+            categories: {
+              some: {
+                category: {
+                  title: { contains: search, mode: 'insensitive' },
+                },
+              },
+            },
+          },
+        ],
+      });
+    }
+
+    const where: Prisma.BlogWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
+
+    const count = await this.prisma.blog.count({ where });
+
+    const blogs = await this.prisma.blog.findMany({
       skip,
       take,
+      where,
+      include: {
+        categories: { include: { category: true } },
+        author: { select: { id: true, name: true } },
+      },
+      orderBy: { created_at: 'desc' },
     });
 
     return paginationResponse({
       count,
       page,
       take,
-      data: categories,
+      data: blogs,
     });
   }
 
@@ -104,12 +146,23 @@ export class BlogService {
     return `This action updates a #${id} blog`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} blog`;
+  async remove(id: string) {
+    const existBlog = await this.existsBlogById(id);
+
+    if (!existBlog) throw new NotFoundException('بلاگ یافت نشد');
+
+    await this.prisma.blog.delete({ where: { id } });
+
+    return { message: Message.Deleted };
   }
 
   async existsBlogBySlug(slug: string) {
     const blog = await this.prisma.blog.findUnique({ where: { slug } });
+    return !!blog;
+  }
+
+  async existsBlogById(id: string) {
+    const blog = await this.prisma.blog.findUnique({ where: { id } });
     return !!blog;
   }
 }
