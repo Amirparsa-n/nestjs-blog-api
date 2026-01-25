@@ -21,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginationDto } from '../../common/dtos/pagination.dto.js';
 import { SkipAuth } from '../../common/decorators/skipAuth.decorator.js';
 import { Pagination } from '../../common/decorators/pagination.decorator.js';
+import { multerStorage } from '../../utils/multer.util.js';
 
 @Controller('blog')
 @ApiTags('Blog')
@@ -31,9 +32,9 @@ export class BlogController {
 
   @Post()
   @ApiConsumes(SwaggerConsumes.MULTIPART)
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('image', { storage: multerStorage('user-profile') }))
   create(@UploadedFile() image: Express.Multer.File, @Body() createBlogDto: CreateBlogDto) {
-    return this.blogService.create(createBlogDto);
+    return this.blogService.create(createBlogDto, image);
   }
 
   @Get('/my')
@@ -56,8 +57,14 @@ export class BlogController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
-    return this.blogService.update(+id, updateBlogDto);
+  @ApiConsumes(SwaggerConsumes.MULTIPART)
+  @UseInterceptors(FileInterceptor('image'))
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() image: Express.Multer.File,
+    @Body() updateBlogDto: UpdateBlogDto
+  ) {
+    return this.blogService.update(id, updateBlogDto, image);
   }
 
   @Delete(':id')

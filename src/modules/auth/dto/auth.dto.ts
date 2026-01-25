@@ -4,14 +4,14 @@ import { IsEnum, IsString, Length } from 'class-validator';
 import { AuthMethod } from '../enums/method.enum';
 
 export class AuthDto {
-  @ApiProperty()
+  @ApiProperty({ example: '09130531884' })
   @IsString()
   @Length(3, 100)
   username: string;
   @ApiProperty({ enum: AuthType })
   @IsEnum(AuthType)
   type: AuthType;
-  @ApiProperty({ enum: AuthMethod })
+  @ApiProperty({ enum: AuthMethod, example: 'phone' })
   @IsEnum(AuthMethod)
   method: AuthMethod;
 }
