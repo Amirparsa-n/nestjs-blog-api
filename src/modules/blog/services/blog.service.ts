@@ -1,15 +1,15 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from './dto/blog.dto';
-import { generateSlug } from '../../utils/generateSlug.js';
-import { PrismaService } from '../../db/prisma.service.js';
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from '../dto/blog.dto';
+import { generateSlug } from '../../../utils/generateSlug.js';
+import { PrismaService } from '../../../db/prisma.service.js';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
-import { BlogStatus } from './enum/status.enum.js';
-import { Message } from '../../common/enums/message.enum.js';
-import { PaginationDto } from '../../common/dtos/pagination.dto.js';
-import { paginationResponse, paginationSolver } from '../../utils/pagination.js';
-import { CategoryService } from '../category/category.service.js';
-import { Prisma } from '../../../generated/prisma/browser.js';
+import { BlogStatus } from '../enum/status.enum.js';
+import { Message } from '../../../common/enums/message.enum.js';
+import { PaginationDto } from '../../../common/dtos/pagination.dto.js';
+import { paginationResponse, paginationSolver } from '../../../utils/pagination.js';
+import { CategoryService } from '../../category/category.service.js';
+import { Prisma } from '../../../../generated/prisma/browser.js';
 
 @Injectable()
 export class BlogService {

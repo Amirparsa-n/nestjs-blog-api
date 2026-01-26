@@ -25,7 +25,7 @@ model User {
   blogs        Blog[]
   likeBlog     like_blog?
   bookmarkBlog bookmark_blog?
-  blogComment  blog_comment[]
+  blogComments BlogComment[]
 
   @@unique([email, phone, username])
 }
@@ -72,8 +72,8 @@ model Blog {
   author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
   likeBlogs     like_blog[]
   bookmarkBlogs bookmark_blog[]
-  blogComments  blog_comment[]
   categories    BlogCategory[]
+  blogComments  BlogComment[]
 }
 
 model BlogCategory {
@@ -102,17 +102,22 @@ model bookmark_blog {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model blog_comment {
-  id         String        @id @default(uuid())
+model BlogComment {
+  id         String   @id @default(uuid())
   text       String
-  accepted   Boolean       @default(false)
-  blogId     String
-  blog       Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
-  userId     String
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parentId   String?
-  parent     blog_comment? @relation("CommentParent", fields: [parentId], references: [id], onDelete: SetNull)
-  created_at DateTime      @default(now())
+  accepted   Boolean  @default(false)
+  created_at DateTime @default(now())
 
-  children blog_comment[] @relation("CommentParent")
+  blogId String
+  blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parentId String?
+  parent   BlogComment?  @relation("CommentTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children BlogComment[] @relation("CommentTree")
+
+  @@index([blogId])
+  @@index([parentId])
 }

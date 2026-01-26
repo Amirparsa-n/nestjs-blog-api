@@ -12,16 +12,16 @@ import {
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { BlogService } from './blog.service';
-import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from './dto/blog.dto';
+import { BlogService } from '../services/blog.service';
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from '../dto/blog.dto';
 import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
-import { AuthGuard } from '../auth/guards/auth.guard.js';
+import { SwaggerConsumes } from '../../../common/enums/swagger-consumes.js';
+import { AuthGuard } from '../../auth/guards/auth.guard.js';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { PaginationDto } from '../../common/dtos/pagination.dto.js';
-import { SkipAuth } from '../../common/decorators/skipAuth.decorator.js';
-import { Pagination } from '../../common/decorators/pagination.decorator.js';
-import { multerStorage } from '../../utils/multer.util.js';
+import { PaginationDto } from '../../../common/dtos/pagination.dto.js';
+import { SkipAuth } from '../../../common/decorators/skipAuth.decorator.js';
+import { Pagination } from '../../../common/decorators/pagination.decorator.js';
+import { multerStorage } from '../../../utils/multer.util.js';
 
 @Controller('blog')
 @ApiTags('Blog')
