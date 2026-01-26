@@ -126,7 +126,7 @@ export class BlogService {
       include: {
         categories: { include: { category: true } },
         author: { select: { id: true, name: true } },
-        _count: { select: { likeBlogs: true } },
+        _count: { select: { likeBlogs: true, blogComments: true, bookmarkBlogs: true } },
       },
       orderBy: { created_at: 'desc' },
     });
@@ -261,6 +261,45 @@ export class BlogService {
 
     return {
       message: 'بلاگ لایک شد',
+      liked: true,
+    };
+  }
+
+  async bookmarkToggle(blogId: string) {
+    const user = this.request.user;
+
+    const existBlog = await this.existsBlogById(blogId);
+    if (!existBlog) throw new NotFoundException('بلاگ یافت نشد');
+
+    const existingLike = await this.prisma.bookmark_blog.findUnique({
+      where: {
+        blogId: blogId,
+        userId: user.id,
+      },
+    });
+
+    // اگر وجود داشت → آنلایک
+    if (existingLike) {
+      await this.prisma.bookmark_blog.delete({
+        where: { id: existingLike.id },
+      });
+
+      return {
+        message: 'بوک‌مارک برداشته شد',
+        liked: false,
+      };
+    }
+
+    // اگر وجود نداشت → لایک
+    await this.prisma.bookmark_blog.create({
+      data: {
+        blogId,
+        userId: user.id,
+      },
+    });
+
+    return {
+      message: 'بلاگ بوک‌مارک شد',
       liked: true,
     };
   }

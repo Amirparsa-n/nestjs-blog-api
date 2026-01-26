@@ -72,6 +72,11 @@ export class BlogController {
     return this.blogService.likeToggle(id);
   }
 
+  @Get('/bookmark/:id')
+  bookmarkToggle(@Param('id', ParseUUIDPipe) id: string) {
+    return this.blogService.bookmarkToggle(id);
+  }
+
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.blogService.remove(id);

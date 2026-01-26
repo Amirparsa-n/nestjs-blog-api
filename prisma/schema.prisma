@@ -96,7 +96,7 @@ model like_blog {
 
 model bookmark_blog {
   id     String @id @default(uuid())
-  blogId String
+  blogId String @unique
   blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
