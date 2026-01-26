@@ -139,8 +139,91 @@ export class BlogService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} blog`;
+  async findOneBySlug(slug: string) {
+    const user = this.request.user;
+
+    const blog = await this.prisma.blog.findUnique({
+      where: { slug },
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            profile: true,
+          },
+        },
+
+        categories: {
+          include: {
+            category: {
+              select: { id: true, title: true },
+            },
+          },
+        },
+
+        likeBlogs: { select: { userId: true } },
+
+        bookmarkBlogs: { select: { userId: true } },
+
+        blogComments: {
+          where: { parentId: null, accepted: true },
+          orderBy: { created_at: 'desc' },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                profile: true,
+              },
+            },
+            children: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    username: true,
+                    name: true,
+                    profile: true,
+                  },
+                },
+                children: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        username: true,
+                        name: true,
+                        profile: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!blog) throw new NotFoundException('بلاگی یافت نشد');
+
+    const result = {
+      ...blog,
+
+      likeCount: blog.likeBlogs.length,
+      bookmarkCount: blog.bookmarkBlogs.length,
+
+      isLikedByMe: user ? blog.likeBlogs.some((like) => like.userId === user.id) : false,
+
+      isBookmarkedByMe: user ? blog.bookmarkBlogs.some((b) => b.userId === user.id) : false,
+
+      likeBlogs: undefined,
+      bookmarkBlogs: undefined,
+    };
+
+    return result;
   }
 
   async update(blogId: string, updateBlogDto: UpdateBlogDto, image: Express.Multer.File) {
