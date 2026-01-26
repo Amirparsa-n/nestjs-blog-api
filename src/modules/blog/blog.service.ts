@@ -126,6 +126,7 @@ export class BlogService {
       include: {
         categories: { include: { category: true } },
         author: { select: { id: true, name: true } },
+        _count: { select: { likeBlogs: true } },
       },
       orderBy: { created_at: 'desc' },
     });
@@ -223,6 +224,45 @@ export class BlogService {
     await this.prisma.blog.delete({ where: { id } });
 
     return { message: Message.Deleted };
+  }
+
+  async likeToggle(blogId: string) {
+    const user = this.request.user;
+
+    const existBlog = await this.existsBlogById(blogId);
+    if (!existBlog) throw new NotFoundException('بلاگ یافت نشد');
+
+    const existingLike = await this.prisma.like_blog.findUnique({
+      where: {
+        blogId: blogId,
+        userId: user.id,
+      },
+    });
+
+    // اگر وجود داشت → آنلایک
+    if (existingLike) {
+      await this.prisma.like_blog.delete({
+        where: { id: existingLike.id },
+      });
+
+      return {
+        message: 'لایک برداشته شد',
+        liked: false,
+      };
+    }
+
+    // اگر وجود نداشت → لایک
+    await this.prisma.like_blog.create({
+      data: {
+        blogId,
+        userId: user.id,
+      },
+    });
+
+    return {
+      message: 'بلاگ لایک شد',
+      liked: true,
+    };
   }
 
   async existsBlogBySlug(slug: string) {

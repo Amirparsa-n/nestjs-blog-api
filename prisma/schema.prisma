@@ -59,21 +59,21 @@ model Category {
 }
 
 model Blog {
-  id             String          @id @default(uuid())
-  title          String
-  slug           String          @unique
-  description    String
-  content        String
-  image          String
-  status         String          @default("draft")
-  created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
-  authorId       String
-  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  likeBlogs      like_blog[]
-  bookmarkBlogs  bookmark_blog[]
-  blogComments   blog_comment[]
-  categories BlogCategory[]
+  id            String          @id @default(uuid())
+  title         String
+  slug          String          @unique
+  description   String
+  content       String
+  image         String
+  status        String          @default("draft")
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  authorId      String
+  author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likeBlogs     like_blog[]
+  bookmarkBlogs bookmark_blog[]
+  blogComments  blog_comment[]
+  categories    BlogCategory[]
 }
 
 model BlogCategory {
@@ -88,12 +88,10 @@ model BlogCategory {
 
 model like_blog {
   id     String @id @default(uuid())
-  blogId String
+  blogId String @unique
   blog   Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, blogId])
 }
 
 model bookmark_blog {

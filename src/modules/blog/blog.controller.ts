@@ -67,6 +67,11 @@ export class BlogController {
     return this.blogService.update(id, updateBlogDto, image);
   }
 
+  @Get('/like/:id')
+  likeToggle(@Param('id', ParseUUIDPipe) id: string) {
+    return this.blogService.likeToggle(id);
+  }
+
   @Delete(':id')
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.blogService.remove(id);
