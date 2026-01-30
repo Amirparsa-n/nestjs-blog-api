@@ -9,6 +9,7 @@ import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { CategoryModule } from './modules/category/category.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { FileManagerModule } from './modules/file-manager/file-manager.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { BlogModule } from './modules/blog/blog.module';
     AuthModule,
     CategoryModule,
     BlogModule,
+    FileManagerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

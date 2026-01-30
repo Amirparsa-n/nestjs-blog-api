@@ -26,6 +26,7 @@ model User {
   likeBlog     like_blog?
   bookmarkBlog bookmark_blog?
   blogComments BlogComment[]
+  files        File[]
 
   @@unique([email, phone, username])
 }
@@ -120,4 +121,35 @@ model BlogComment {
 
   @@index([blogId])
   @@index([parentId])
+}
+
+enum FileCategory {
+  IMAGE
+  DOCUMENT
+  VIDEO
+  AUDIO
+  ARCHIVE
+  OTHER
+}
+
+model File {
+  id           String       @id @default(cuid())
+  filename     String
+  originalName String
+  path         String
+  mimeType     String
+  size         Int
+  category     FileCategory
+  description  String?
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([category])
+  @@index([userId])
+  @@index([createdAt])
 }

@@ -7,21 +7,18 @@ import {
   Param,
   Delete,
   UseGuards,
-  UseInterceptors,
   UploadedFile,
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { BlogService } from '../services/blog.service';
 import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from '../dto/blog.dto';
-import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { SwaggerConsumes } from '../../../common/enums/swagger-consumes.js';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../../auth/guards/auth.guard.js';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { PaginationDto } from '../../../common/dtos/pagination.dto.js';
 import { SkipAuth } from '../../../common/decorators/skipAuth.decorator.js';
 import { Pagination } from '../../../common/decorators/pagination.decorator.js';
-import { multerStorage } from '../../../utils/multer.util.js';
+import { UploadFile } from '../../../common/decorators/upload-file.decorator.js';
 
 @Controller('blog')
 @ApiTags('Blog')
@@ -31,8 +28,7 @@ export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   @Post()
-  @ApiConsumes(SwaggerConsumes.MULTIPART)
-  @UseInterceptors(FileInterceptor('image', { storage: multerStorage('user-profile') }))
+  @UploadFile('image', 'user-profile')
   create(@UploadedFile() image: Express.Multer.File, @Body() createBlogDto: CreateBlogDto) {
     return this.blogService.create(createBlogDto, image);
   }
@@ -58,8 +54,7 @@ export class BlogController {
   }
 
   @Patch(':id')
-  @ApiConsumes(SwaggerConsumes.MULTIPART)
-  @UseInterceptors(FileInterceptor('image'))
+  @UploadFile('image', 'user-profile')
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() image: Express.Multer.File,
