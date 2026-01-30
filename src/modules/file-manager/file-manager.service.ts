@@ -13,14 +13,10 @@ import { FileWhereInput } from '../../../generated/prisma/models.js';
 
 @Injectable()
 export class FileManagerService {
-  private readonly baseUploadsUrl: string;
-
   constructor(
     private readonly prisma: PrismaService,
     @Inject(REQUEST) private readonly request: Request
-  ) {
-    this.baseUploadsUrl = `${this.request.protocol}://${this.request.get('host')}/uploads`;
-  }
+  ) {}
 
   async create(file: Express.Multer.File, body: UploadFileDto) {
     const user = this.request.user;
@@ -41,16 +37,14 @@ export class FileManagerService {
       },
     });
 
-    const fileWithUrl = this.addUrlToFile(createdFile);
-
-    return { message: Message.Created, data: fileWithUrl };
+    return { message: Message.Created, data: createdFile };
   }
 
   async findAll(paginationDto: PaginationDto, filters: FileFilterDto) {
     const { category, search, userId, orderBy } = filters;
     const { take, skip, page } = paginationSolver(paginationDto);
 
-    const where: FileWhereInput = { deletedAt: { not: null } };
+    const where: FileWhereInput = { deletedAt: null };
 
     if (category) {
       where.category = category;
@@ -81,7 +75,7 @@ export class FileManagerService {
       count,
       page,
       take,
-      data: files.map((file) => this.addUrlToFile(file)),
+      data: files,
     });
   }
 
@@ -93,7 +87,7 @@ export class FileManagerService {
     if (!file) {
       throw new NotFoundException('فایل یافت نشد');
     }
-    return this.addUrlToFile(file);
+    return file;
   }
 
   async remove(id: string) {
@@ -115,15 +109,6 @@ export class FileManagerService {
     });
 
     return { message: Message.Deleted };
-  }
-
-  private addUrlToFile(file: any, folderName: string = 'file-manager'): any {
-    if (!file) return file;
-
-    return {
-      ...file,
-      url: `${this.baseUploadsUrl}/${folderName}/${file.filename}`,
-    };
   }
 
   private detectCategory(mimeType: string): FileCategory {

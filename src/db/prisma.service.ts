@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from 'generated/prisma/client';
+import { fileUrlExtension } from './extension/prisma.extension.js';
 
 @Injectable()
 export class PrismaService extends PrismaClient {
@@ -13,6 +14,8 @@ export class PrismaService extends PrismaClient {
       adapter,
       log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
     });
+
+    return this.$extends(fileUrlExtension) as this;
   }
 
   async onModuleInit() {
