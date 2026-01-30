@@ -44,7 +44,8 @@
         "pg": "^8.16.3",
         "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.1",
-        "simply-slugy": "^1.1.0"
+        "simply-slugy": "^1.1.0",
+        "swagger-themes": "^1.4.3"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",
@@ -75,13 +76,19 @@
         "typescript-eslint": "^8.20.0"
     },
     "jest": {
-        "moduleFileExtensions": ["js", "json", "ts"],
+        "moduleFileExtensions": [
+            "js",
+            "json",
+            "ts"
+        ],
         "rootDir": "src",
         "testRegex": ".*\\.spec\\.ts$",
         "transform": {
             "^.+\\.(t|j)s$": "ts-jest"
         },
-        "collectCoverageFrom": ["**/*.(t|j)s"],
+        "collectCoverageFrom": [
+            "**/*.(t|j)s"
+        ],
         "coverageDirectory": "../coverage",
         "testEnvironment": "node"
     }
