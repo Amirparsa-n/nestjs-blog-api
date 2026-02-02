@@ -1,29 +1,18 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  UploadedFile,
-  Query,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, Query, ParseUUIDPipe } from '@nestjs/common';
 import { BlogService } from '../services/blog.service';
 import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from '../dto/blog.dto';
-import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '../../auth/guards/auth.guard.js';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from '../../../common/dtos/pagination.dto.js';
 import { SkipAuth } from '../../../common/decorators/skipAuth.decorator.js';
 import { Pagination } from '../../../common/decorators/pagination.decorator.js';
 import { UploadFile } from '../../../common/decorators/upload-file.decorator.js';
+import { Role } from '@common/decorators/role.decorator';
+import { AuthDecorator } from '@common/decorators/auth.decorator';
+import { Roles } from 'generated/prisma/enums';
 
 @Controller('blog')
 @ApiTags('Blog')
-@ApiBearerAuth('auth')
-@UseGuards(AuthGuard)
+@AuthDecorator()
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
@@ -74,6 +63,7 @@ export class BlogController {
   }
 
   @Delete(':id')
+  @Role(Roles.admin)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.blogService.remove(id);
   }
