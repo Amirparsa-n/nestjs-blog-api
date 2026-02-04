@@ -28,6 +28,7 @@ model User {
   role         Roles          @default(user)
   profile      Profile?
   otp          Otp?
+  isBlocked    Boolean        @default(false)
   blogs        Blog[]
   likeBlog     like_blog?
   bookmarkBlog bookmark_blog?

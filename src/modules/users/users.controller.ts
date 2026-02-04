@@ -10,6 +10,7 @@ import {
   ParseFilePipe,
   UploadedFiles,
   Patch,
+  Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -18,6 +19,9 @@ import { ChangeUsernameDto, ProfileDto } from './dto/profile.dto';
 import { SwaggerConsumes } from '../../common/enums/swagger-consumes.js';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { multerStorage } from '../../utils/multer.util.js';
+import { UserBlockDto } from '@modules/users/dto/user.dto';
+import { Role } from '@common/decorators/role.decorator';
+import { Roles } from 'generated/prisma/enums';
 
 @Controller('users')
 @ApiTags('Users')
@@ -54,6 +58,12 @@ export class UsersController {
   @Patch('change-username')
   async changeUsername(@Body() changeUsernameDto: ChangeUsernameDto) {
     return this.usersService.changeUsername(changeUsernameDto.username);
+  }
+
+  @Post('/block')
+  @Role(Roles.admin)
+  blockUser(@Body() body: UserBlockDto) {
+    return this.usersService.blockUser(body.userId);
   }
 
   @Get()

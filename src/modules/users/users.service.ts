@@ -1,5 +1,5 @@
 import { PrismaService } from '@db/prisma.service';
-import { ConflictException, Inject, Injectable, Scope } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { ProfileDto } from './dto/profile.dto';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
@@ -74,8 +74,20 @@ export class UsersService {
     return { message: 'نام کاربری با موفقیت ویرایش شد' };
   }
 
+  async blockUser(userId: string) {
+    const user = await this.findOne(userId);
+    if (!user) throw new NotFoundException('کاربر مورد نظر یافت نشد');
+
+    const isBlocked = user.isBlocked;
+
+    await this.prisma.user.update({ where: { id: userId }, data: { isBlocked: !isBlocked } });
+
+    return { message: `کاربر با موفقیت ${isBlocked ? 'رفع بلاک شد' : 'بلاک شد'}` };
+  }
+
   findAll() {
-    return `This action returns all users`;
+    const users = this.prisma.user.findMany();
+    return users;
   }
 
   async findOne(id: string) {

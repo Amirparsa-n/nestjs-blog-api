@@ -75,6 +75,10 @@ export class AuthService {
     const user = await this.checkUserExistence(method, username);
     if (!user) throw new ConflictException('کاربر مورد نظر یافت نشد');
 
+    if (user.isBlocked) {
+      throw new UnauthorizedException('حساب کاربری شما بلاک شده است. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.');
+    }
+
     const otp = await this.sendOrSaveOtp(user.id);
 
     const token = this.tokensService.createOtpToken({ userId: user.id });
